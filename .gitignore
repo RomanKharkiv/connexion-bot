@@ -1,0 +1,15 @@
+*.pyc
+.idea/
+.gitconfig
+.project
+.pydevproject
+.directory
+.vscode
+venv
+# Also remove this too
+.bash_history
+.bash_logout
+.bashrc
+.profile
+.pgpass
+
