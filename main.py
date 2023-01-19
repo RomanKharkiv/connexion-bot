@@ -8,11 +8,13 @@ from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextM
 from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, TWO, THREE, FOUR, END_ROUTES, \
     START_ROUTES
 
+
+from prrsist import Persist
+
 # ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'cert.pem')
 # WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'private.key')
 
-TOKEN = os.environ["TOKEN"]
 
 try:
     from telegram import __version_info__
@@ -177,7 +179,9 @@ def main() -> None:
     """Start the bot."""
     logger.info("-------1111111======== ")
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(os.environ["TOKEN"]).build()
+    my_persistence = Persist.from_environment()
+    application = Application.builder().token(os.environ["TOKEN"]).persistence(my_persistence).build()
+
     # application.add_handler(CommandHandler("start", start))
     # application.add_handler(CallbackQueryHandler(button))
     application.add_handler(CommandHandler("help", help_command))
