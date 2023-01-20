@@ -9,7 +9,7 @@ from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, T
     START_ROUTES
 
 
-from prrsist import Persist
+from persist import Persist
 
 # ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'cert.pem')
