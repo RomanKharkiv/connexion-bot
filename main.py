@@ -181,7 +181,6 @@ def main() -> None:
     # Create the Application and pass it your bot's token.
     my_persistence = Persist.from_environment()
     application = Application.builder().token(os.environ["TOKEN"]).persistence(my_persistence).build()
-    application.run_webhook(listen="0.0.0.0", port=8080, webhook_url="https://demo-app-wcgzee6f5a-uc.a.run.app")
     # application.add_handler(CommandHandler("start", start))
     # application.add_handler(CallbackQueryHandler(button))
     application.add_handler(CommandHandler("help", help_command))
@@ -221,7 +220,8 @@ def main() -> None:
     # Run the bot until the user presses Ctrl-C
     # We pass 'allowed_updates' handle *all* updates including `chat_member` updates
     # To reset this, simply pass `allowed_updates=[]`
-    application.run_polling()
+    # application.run_polling()
+    application.run_webhook(listen="0.0.0.0", port=int(os.environ.get("PORT", 8080)), webhook_url="https://demo-app-wcgzee6f5a-uc.a.run.app")
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=flawless-star-133923-431daa09f037.json
 ```
 
 ```bash
-gcloud beta run deploy connecxion --source .  --execution-environment=gen2 --update-env-vars=[TOKEN=${TOKEN},FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS},FIREBASE_URL=${FIREBASE_URL},GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}] --platform managed --allow-unauthenticated --project ${PROJECT_ID} --port 0.0.0.0:8080:8080 
+gcloud beta run deploy connecxion2 --source .  --execution-environment=gen1 --set-env-vars=[TOKEN=${TOKEN},FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS},FIREBASE_URL=${FIREBASE_URL},GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}] --platform managed --allow-unauthenticated --project ${PROJECT_ID} 
 ```
 
 Set Webhook (only need to be done once)
