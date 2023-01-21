@@ -39,6 +39,19 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+PORT = int(os.environ.get("PORT", 8080))
+TOKEN = os.environ.get("TOKEN")
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
+FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
+FIREBASE_URL = os.environ.get("FIREBASE_URL")
+GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+
+logger.info("-- Port - %d", PORT)
+logger.info("-- WEBHOOK_URL %s", WEBHOOK_URL)
+logger.info("-- TOKEN %s", TOKEN)
+logger.info("-- FIREBASE_CREDENTIALS %s", FIREBASE_CREDENTIALS)
+logger.info("-- GOOGLE_APPLICATION_CREDENTIALS %s", GOOGLE_APPLICATION_CREDENTIALS)
+logger.info("-- FIREBASE_URL  %s", FIREBASE_URL)
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -222,20 +235,21 @@ def main() -> None:
     # application.run_polling()
 
     application.run_webhook(listen="0.0.0.0",
-                            port=int(os.environ.get("PORT", 8080)),
-                            webhook_url=" https://connecxion3-wcgzee6f5a-uc.a.run.app")
+                            port=PORT,
+                            webhook_url=WEBHOOK_URL)
 
 
-from flask import Flask, request, jsonify
+# from flask import Flask, request, jsonify
+#
+# app = Flask(__name__)
+#
+#
+# @app.route("/", methods=["GET"])
+# def homepage():
+#     if request.method == "GET":
+#         return jsonify({"message": "Hello World!"})
 
-app = Flask(__name__)
-
-
-@app.route("/", methods=["GET"])
-def homepage():
-    if request.method == "GET":
-        return jsonify({"message": "Hello World!"})
 
 if __name__ == "__main__":
-    # main()
-    app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
+    main()
+    # app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
