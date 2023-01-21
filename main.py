@@ -235,8 +235,9 @@ def main() -> None:
     # application.run_polling()
 
     application.run_webhook(listen="0.0.0.0",
-                            port=PORT,
-                            webhook_url=WEBHOOK_URL)
+                            port=8080,
+                            webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
+                            # webhook_url=WEBHOOK_URL)
 
 
 # from flask import Flask, request, jsonify
