@@ -41,18 +41,18 @@ class Persist(BasePersistence):
     async def get_user_data(self):
         data = self.fb_user_data.get() or {}
         output = self.convert_keys(data)
-        logger.info("-----get_user_data ======= data - %d, output - %d", data, output)
+        logger.info("-----get_user_data ======= data - %s, output - %s", data, output)
         return defaultdict(dict, output)
 
     async def get_chat_data(self):
         data = self.fb_chat_data.get() or {}
         output = self.convert_keys(data)
-        logger.info("-----get_chat_data ======= data - %d, output -%d", data, output)
+        logger.info("-----get_chat_data ======= data - %s, output -%s", data, output)
         return defaultdict(dict, output)
 
     async def get_bot_data(self):
         data = self.fb_bot_data.get() or {}
-        logger.info("-----get_bot_data ======= data -%d", data)
+        logger.info("-----get_bot_data ======= data -%s", data)
         return defaultdict(dict, data)
 
     async def get_conversations(self, name):
@@ -71,15 +71,15 @@ class Persist(BasePersistence):
             logger.info("-----update_conversation = name - %d, key - %d ", name, key)
 
     def update_user_data(self, user_id, data):
-        logger.info("-----update_user_data === user_id-%d, data - %d", user_id, data)
+        logger.info("-----update_user_data === user_id-%d, data - %s", user_id, data)
         self.fb_user_data.child(str(user_id)).update(data)
 
     def update_chat_data(self, chat_id, data):
-        logger.info("-----update_chat_data ======= chat_id - %d", chat_id)
+        logger.info("-----update_chat_data ======= chat_id - %d,  data - %s", chat_id)
         self.fb_chat_data.child(str(chat_id)).update(data)
 
     def update_bot_data(self, data):
-        logger.info("-----update_bot_data ======= data - %d", data)
+        logger.info("-----update_bot_data ======= data - %s", data)
         self.fb_bot_data = data
 
     @staticmethod

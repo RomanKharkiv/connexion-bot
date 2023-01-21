@@ -174,17 +174,6 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.inline_query.answer(results)
 
 
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-
-@app.route("/", methods=["GET"])
-def homepage():
-    if request.method == "GET":
-        return jsonify({"message": "Hello World!"})
-
-
 def main() -> None:
     """Start the bot."""
     logger.info("-------main ======== ")
