@@ -235,22 +235,21 @@ def main() -> None:
     # application.run_polling()
 
     application.run_webhook(listen="0.0.0.0",
-                            port=8080,
-                            webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
-                            # webhook_url=WEBHOOK_URL)
+                            port=PORT,
+                            webhook_url=WEBHOOK_URL)
 
 
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-
-@app.route("/", methods=["GET"])
-def homepage():
-    if request.method == "GET":
-        return jsonify({"message": "Hello World!"})
+# from flask import Flask, request, jsonify
+#
+# app = Flask(__name__)
+#
+#
+# @app.route("/", methods=["GET"])
+# def homepage():
+#     if request.method == "GET":
+#         return jsonify({"message": "Hello World!"})
 
 
 if __name__ == "__main__":
-    # main()
-    app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
+    main()
+    # app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
