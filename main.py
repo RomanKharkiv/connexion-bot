@@ -219,11 +219,11 @@ def main() -> None:
     # Run the bot until the user presses Ctrl-C
     # We pass 'allowed_updates' handle *all* updates including `chat_member` updates
     # To reset this, simply pass `allowed_updates=[]`
-    application.run_polling()
+    # application.run_polling()
 
-    # application.run_webhook(listen="0.0.0.0",
-    #                         port=int(os.environ.get("PORT", 8080)),
-    #                         webhook_url=" https://connecxion3-wcgzee6f5a-uc.a.run.app")
+    application.run_webhook(listen="0.0.0.0",
+                            port=int(os.environ.get("PORT", 8080)),
+                            webhook_url=" https://connecxion3-wcgzee6f5a-uc.a.run.app")
 
 
 if __name__ == "__main__":
