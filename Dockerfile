@@ -1,9 +1,9 @@
 FROM python:3.11
 ENV PYTHONUNBUFFERED True
 WORKDIR /app
-COPY *.txt .
+COPY . app/
 RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
-COPY . ./
+#COPY . ./
 #RUN update-ca-certificates
 
 
