@@ -28,3 +28,8 @@ curl "https://api.telegram.org/bot${TOKEN}/setWebhook?url=$(gcloud run services 
  gcloud builds submit --region=us-central1 --config cloudbuild.yaml
  
 docker run us-central1-docker.pkg.dev/${PROJECT_ID}/connexion-docker-repo/connexion-image:tag1
+
+
+Doploy on Firebase
+
+gcloud builds submit --region=us-central1  --config cloudbuild.yaml .

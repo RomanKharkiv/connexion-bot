@@ -75,7 +75,7 @@ class Persist(BasePersistence):
         self.fb_user_data.child(str(user_id)).update(data)
 
     def update_chat_data(self, chat_id, data):
-        logger.info("-----update_chat_data ======= chat_id - %d,  data - %s", chat_id)
+        logger.info("-----update_chat_data ======= chat_id - %d,  data - %s", chat_id, data)
         self.fb_chat_data.child(str(chat_id)).update(data)
 
     def update_bot_data(self, data):

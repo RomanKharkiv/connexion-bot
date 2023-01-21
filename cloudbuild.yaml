@@ -1,6 +1,3 @@
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag1', '.' ]
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'push', 'us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag1']
-images: ['us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag1']
+- name: gcr.io/flawless-star-133923/firebase
+  args: ['deploy', '--project=flawless-star-133923', '--only=hosting']
