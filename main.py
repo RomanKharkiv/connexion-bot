@@ -8,7 +8,6 @@ from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextM
 from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, TWO, THREE, FOUR, END_ROUTES, \
     START_ROUTES
 
-
 from persist import Persist
 
 # ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -175,9 +174,20 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.inline_query.answer(results)
 
 
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+
+@app.route("/", methods=["GET"])
+def homepage():
+    if request.method == "GET":
+        return jsonify({"message": "Hello World!"})
+
+
 def main() -> None:
     """Start the bot."""
-    logger.info("-------1111111======== ")
+    logger.info("-------main ======== ")
     # Create the Application and pass it your bot's token.
     my_persistence = Persist.from_environment()
     application = Application.builder().token(os.environ["TOKEN"]).persistence(my_persistence).build()
@@ -221,7 +231,10 @@ def main() -> None:
     # We pass 'allowed_updates' handle *all* updates including `chat_member` updates
     # To reset this, simply pass `allowed_updates=[]`
     # application.run_polling()
-    application.run_webhook(listen="0.0.0.0", port=int(os.environ.get("PORT", 8080)), webhook_url="https://demo-app-wcgzee6f5a-uc.a.run.app")
+
+    application.run_webhook(listen="0.0.0.0",
+                            port=int(os.environ.get("PORT", 8080)),
+                            webhook_url="https://connecxion3-wcgzee6f5a-uc.a.run.app")
 
 
 if __name__ == "__main__":

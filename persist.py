@@ -41,45 +41,45 @@ class Persist(BasePersistence):
     async def get_user_data(self):
         data = self.fb_user_data.get() or {}
         output = self.convert_keys(data)
-        logger.info("-----get_user_data ======= ", data, output)
+        logger.info("-----get_user_data ======= data - %d, output - %d", data, output)
         return defaultdict(dict, output)
 
     async def get_chat_data(self):
         data = self.fb_chat_data.get() or {}
         output = self.convert_keys(data)
-        logger.info("-----get_chat_data ======= ", data, output)
+        logger.info("-----get_chat_data ======= data - %d, output -%d", data, output)
         return defaultdict(dict, output)
 
     async def get_bot_data(self):
         data = self.fb_bot_data.get() or {}
-        logger.info("-----get_bot_data ======= ", data)
+        logger.info("-----get_bot_data ======= data -%d", data)
         return defaultdict(dict, data)
 
     async def get_conversations(self, name):
         res = self.fb_conversations.child(name).get() or {}
         res = {literal_eval(k): v for k, v in res.items()}
-        logger.info("-----get_conversations ======= ", res)
+        logger.info("-----get_conversations ======= res - %d", res)
         return res
 
     def update_conversation(self, name, key, new_state):
         if new_state:
             self.fb_conversations.child(name).child(str(key)).set(new_state)
-            logger.info("-----update_conversation NEW statae======= ", new_state, name, key)
+            logger.info("-----update_conversation new_statae - %d, name - %d, key -%d", new_state, name, key)
 
         else:
             self.fb_conversations.child(name).child(str(key)).delete()
-            logger.info("-----update_conversation ======= ", name, key)
+            logger.info("-----update_conversation = name - %d, key - %d ", name, key)
 
     def update_user_data(self, user_id, data):
-        logger.info("-----update_user_data ======= ", user_id, data)
+        logger.info("-----update_user_data === user_id-%d, data - %d", user_id, data)
         self.fb_user_data.child(str(user_id)).update(data)
 
     def update_chat_data(self, chat_id, data):
-        logger.info("-----update_chat_data ======= ", chat_id)
+        logger.info("-----update_chat_data ======= chat_id - %d", chat_id)
         self.fb_chat_data.child(str(chat_id)).update(data)
 
     def update_bot_data(self, data):
-        logger.info("-----update_bot_data ======= ", data)
+        logger.info("-----update_bot_data ======= data - %d", data)
         self.fb_bot_data = data
 
     @staticmethod
