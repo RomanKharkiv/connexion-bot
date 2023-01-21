@@ -1,12 +1,13 @@
 FROM python:3.11
 ENV PYTHONUNBUFFERED True
 WORKDIR /app
-COPY . app/
+COPY *.txt .
 RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
-#COPY . ./
+COPY . ./
 #RUN update-ca-certificates
 
-
+#ARG PORT=8080
+#ENV PORT $PORT
 ENV TOKEN $TOKEN
 ENV WEBHOOK_URL $WEBHOOK_URL
 ENV FIREBASE_CREDENTIALS $FIREBASE_CREDENTIALS
