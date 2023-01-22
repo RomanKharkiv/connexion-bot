@@ -76,6 +76,12 @@ logger.info("-- FIREBASE_CREDENTIALS %s", FIREBASE_CREDENTIALS)
 logger.info("-- GOOGLE_APPLICATION_CREDENTIALS %s", GOOGLE_APPLICATION_CREDENTIALS)
 logger.info("-- FIREBASE_URL  %s", FIREBASE_URL)
 
+TOKEN="891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s"
+FIREBASE_CREDENTIALS="flawless-star-133923-431daa09f037.json"
+FIREBASE_URL="https://flawless-star-133923-default-rtdb.firebaseio.com/"
+GOOGLE_APPLICATION_CREDENTIALS="flawless-star-133923-431daa09f037.json"
+WEBHOOK_URL="https://connexion-image-wcgzee6f5a-uc.a.run.app"
+
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
