@@ -36,7 +36,7 @@ class Persist(BasePersistence):
 
     @classmethod
     def from_environment(cls):
-        with open(FIREBASE_CREDS) as json_file:
+        with open("flawless-star-133923-431daa09f037.json") as json_file:
             credentials = json.load(json_file)
         return cls(database_url=os.environ["FIREBASE_URL"], credentials=credentials)
 
