@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 FIREBASE_CREDS = os.path.join(ROOT_DIR, os.environ["FIREBASE_CREDENTIALS"])
 
+logger.info("-- firebase cred  %s, file - %s", FIREBASE_CREDS, os.environ["FIREBASE_CREDENTIALS"])
+
+
 class Persist(BasePersistence):
     def __init__(
         self,
