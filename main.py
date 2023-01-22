@@ -191,8 +191,9 @@ def main() -> None:
     """Start the bot."""
     logger.info("-------main ======== ")
     # Create the Application and pass it your bot's token.
-    my_persistence = Persist.from_environment()
-    application = Application.builder().token(os.environ["TOKEN"]).persistence(my_persistence).build()
+    # my_persistence = Persist.from_environment()
+    # application = Application.builder().token(os.environ["TOKEN"]).persistence(my_persistence).build()
+    application = Application.builder().token(os.environ["TOKEN"]).build()
     # application.add_handler(CommandHandler("start", start))
     # application.add_handler(CallbackQueryHandler(button))
     application.add_handler(CommandHandler("help", help_command))
