@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# This program is dedicated to the public domain under the CC0 license.
-# pylint: disable=import-error,wrong-import-position
 """
 Simple example of a bot that uses a custom webhook setup and handles custom updates.
 For the custom webhook setup, the libraries `starlette` and `uvicorn` are used. Please install
@@ -33,6 +30,7 @@ from starlette.routing import Route
 from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextMessageContent
 from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, TWO, THREE, FOUR, END_ROUTES, \
     START_ROUTES
+from persist import Persist
 
 try:
     from telegram import __version_info__
@@ -81,6 +79,8 @@ FIREBASE_CREDENTIALS="flawless-star-133923-431daa09f037.json"
 FIREBASE_URL="https://flawless-star-133923-default-rtdb.firebaseio.com/"
 GOOGLE_APPLICATION_CREDENTIALS="flawless-star-133923-431daa09f037.json"
 WEBHOOK_URL="https://connexion-image-wcgzee6f5a-uc.a.run.app"
+
+my_persistence = Persist.from_environment()
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -144,16 +144,16 @@ class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
             return cls(application=application, user_id=update.user_id)
         return super().from_update(update, application)
 
-
-async def start(update: Update, context: CustomContext) -> None:
-    """Display a message with instructions on how to use this bot."""
-    url = context.bot_data["url"]
-    payload_url = html.escape(f"{url}/submitpayload?user_id=<your user id>&payload=<payload>")
-    text = (
-        f"To check if the bot is still running, call <code>{url}/healthcheck</code>.\n\n"
-        f"To post a custom update, call <code>{payload_url}</code>."
-    )
-    await update.message.reply_html(text=text)
+#
+# async def start(update: Update, context: CustomContext) -> None:
+#     """Display a message with instructions on how to use this bot."""
+#     url = context.bot_data["url"]
+#     payload_url = html.escape(f"{url}/submitpayload?user_id=<your user id>&payload=<payload>")
+#     text = (
+#         f"To check if the bot is still running, call <code>{url}/healthcheck</code>.\n\n"
+#         f"To post a custom update, call <code>{payload_url}</code>."
+#     )
+#     await update.message.reply_html(text=text)
 
 
 async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
@@ -179,7 +179,7 @@ async def main() -> None:
     # Here we set updater to None because we want our custom webhook server to handle the updates
     # and hence we don't need an Updater instance
     application = (
-        Application.builder().token(TOKEN).updater(None).context_types(context_types).build()
+        Application.builder().token(TOKEN).updater(None).persistence(my_persistence).context_types(context_types).build()
     )
     # save the values in `bot_data` such that we may easily access them in the callbacks
     application.bot_data["url"] = WEBHOOK_URL
