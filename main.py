@@ -7,6 +7,7 @@ from uuid import uuid4
 from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextMessageContent
 from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, TWO, THREE, FOUR, END_ROUTES, \
     START_ROUTES
+from persist import Persist
 
 # from persist import Persist
 
@@ -253,4 +254,6 @@ def homepage():
 
 if __name__ == "__main__":
     # main()
+    my_persistence = Persist.from_environment()
     app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
+
