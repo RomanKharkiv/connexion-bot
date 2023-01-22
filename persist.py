@@ -12,7 +12,8 @@ from firebase_admin import db
 from telegram.ext import BasePersistence, PersistenceInput
 
 logger = logging.getLogger(__name__)
-
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+FIREBASE_CREDS = os.path.join(ROOT_DIR, os.environ["FIREBASE_CREDENTIALS"])
 
 class Persist(BasePersistence):
     def __init__(
@@ -32,10 +33,9 @@ class Persist(BasePersistence):
 
     @classmethod
     def from_environment(cls):
-        with open(os.environ["FIREBASE_CREDENTIALS"]) as json_file:
+        with open(FIREBASE_CREDS) as json_file:
             credentials = json.load(json_file)
-        database_url = os.environ["FIREBASE_URL"]
-        return cls(database_url=database_url, credentials=credentials)
+        return cls(database_url=os.environ["FIREBASE_URL"], credentials=credentials)
 
     async def get_user_data(self):
         data = self.fb_user_data.get() or {}

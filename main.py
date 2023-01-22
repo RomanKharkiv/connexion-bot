@@ -8,7 +8,7 @@ from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextM
 from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, TWO, THREE, FOUR, END_ROUTES, \
     START_ROUTES
 
-from persist import Persist
+# from persist import Persist
 
 # ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 # WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'cert.pem')
