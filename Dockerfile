@@ -1,9 +1,8 @@
 FROM python:3.11
 ENV PYTHONUNBUFFERED True
-#WORKDIR /app
-COPY requirements.txt requirements.txt
+COPY . /app
+WORKDIR /app
 RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
-COPY . .
 #RUN update-ca-certificates
 
 #ARG PORT=8080

@@ -1,25 +1,25 @@
-steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag2', '.' ]
-- name: 'gcr.io/cloud-builders/docker'
-  args: [ 'push', 'us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag2']
-  env:
-    - 'TOKEN=891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s'
-    - 'FIREBASE_CREDENTIALS=flawless-star-133923-431daa09f037.json'
-    - 'FIREBASE_URL=https://flawless-star-133923-default-rtdb.firebaseio.com/'
-    - 'GOOGLE_APPLICATION_CREDENTIALS=flawless-star-133923-431daa09f037.json'
-    - 'WEBHOOK_URL=https://connexion-image-wcgzee6f5a-uc.a.run.app'
-images: ['us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag2']
-
-
-
-
 #steps:
-#- name: gcr.io/$PROJECT_ID/firebase
-#  args: ['deploy', '--project=$PROJECT_ID', '--allow-unauthenticated','--only=hosting']
+#- name: 'gcr.io/cloud-builders/docker'
+#  args: [ 'build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag2', '.' ]
+#- name: 'gcr.io/cloud-builders/docker'
+#  args: [ 'push', 'us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag2']
 #  env:
-##  - 'TOKEN=891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s'
-##  - 'FIREBASE_CREDENTIALS=flawless-star-133923-431daa09f037.json'
-##  - 'FIREBASE_URL=https://flawless-star-133923-default-rtdb.firebaseio.com/'
-##  - 'GOOGLE_APPLICATION_CREDENTIALS=flawless-star-133923-431daa09f037.json'
-##  - 'WEBHOOK_URL=https://connexion-image-wcgzee6f5a-uc.a.run.app'
+#    - 'TOKEN=891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s'
+#    - 'FIREBASE_CREDENTIALS=flawless-star-133923-431daa09f037.json'
+#    - 'FIREBASE_URL=https://flawless-star-133923-default-rtdb.firebaseio.com/'
+#    - 'GOOGLE_APPLICATION_CREDENTIALS=flawless-star-133923-431daa09f037.json'
+#    - 'WEBHOOK_URL=https://connexion-image-wcgzee6f5a-uc.a.run.app'
+#images: ['us-central1-docker.pkg.dev/$PROJECT_ID/connexion-docker-repo/connexion-image:tag2']
+
+
+
+
+steps:
+- name: gcr.io/$PROJECT_ID/firebase
+  args: ['deploy', '--project=$PROJECT_ID', '--allow-unauthenticated','--only=hosting']
+  env:
+  - 'TOKEN=891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s'
+  - 'FIREBASE_CREDENTIALS=flawless-star-133923-431daa09f037.json'
+  - 'FIREBASE_URL=https://flawless-star-133923-default-rtdb.firebaseio.com/'
+  - 'GOOGLE_APPLICATION_CREDENTIALS=flawless-star-133923-431daa09f037.json'
+  - 'WEBHOOK_URL=https://connexion-image-wcgzee6f5a-uc.a.run.app'
