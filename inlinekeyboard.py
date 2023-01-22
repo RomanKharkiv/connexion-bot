@@ -32,7 +32,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Send message on `/start`."""
     # Get user that sent /start and log his name
     user = update.message.from_user
-    logger.info("User %s started the conversation.", user.first_name)
+    logger.info("User first_name %s started the conversation.", user)
     # Build InlineKeyboard where each button has a displayed text
     # and a string as callback_data
     # The keyboard is a list of button rows, where each row is in turn

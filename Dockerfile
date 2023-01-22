@@ -2,7 +2,7 @@ FROM python:3.11
 ENV PYTHONUNBUFFERED True
 COPY . /app
 WORKDIR /app
-RUN chmod -R a+X /app/flawless-star-133923-431daa09f037.json
+#RUN chmod -R a+X /app/flawless-star-133923-431daa09f037.json
 RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
 #RUN update-ca-certificates
 

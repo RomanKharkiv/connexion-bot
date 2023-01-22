@@ -95,32 +95,33 @@ class Persist(BasePersistence):
         return output
 
     async def get_callback_data(self) -> Optional[CDCData]:
-        logger.info("-----get_callback_data ======= ")
+        logger.info("-----get_callback_data ======= CDCData - %s", CDCData)
         pass
 
     async def update_callback_data(self, data: CDCData) -> None:
-        logger.info("-----update_callback_data ======= ")
+        logger.info("-----update_callback_data ======= data -%s", data)
         pass
 
     async def drop_chat_data(self, chat_id: int) -> None:
-        logger.info("-----drop_chat_data ======= ")
+        logger.info("-----drop_chat_data ======= chat_id - %s", chat_id)
         pass
 
     async def drop_user_data(self, user_id: int) -> None:
-        logger.info("-----drop_user_data ======= ")
+        logger.info("-----drop_user_data ====== user_id - %s", user_id)
         pass
 
     async def refresh_user_data(self, user_id: int, user_data: UD) -> None:
-        logger.info("-----refresh_user_data ======= ")
+        logger.info("-----refresh_user_data ======= user_id -%s, user_data - %s", user_id, user_data)
         pass
 
     async def refresh_chat_data(self, chat_id: int, chat_data: CD) -> None:
-        logger.info("-----refresh_chat_data ======= ")
+        logger.info("-----refresh_chat_data ======= user_id -%s, user_data - %s", chat_id, chat_data)
         pass
 
     async def refresh_bot_data(self, bot_data: BD) -> None:
-        logger.info("-----refresh_bot_data ======= ")
+        logger.info("-----refresh_bot_data ======= bot_data - %s", bot_data)
         pass
 
     async def flush(self) -> None:
+        logger.info("----- flush =======")
         pass

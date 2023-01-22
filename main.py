@@ -1,20 +1,38 @@
-import logging
-import os
+#!/usr/bin/env python
+# This program is dedicated to the public domain under the CC0 license.
+# pylint: disable=import-error,wrong-import-position
+"""
+Simple example of a bot that uses a custom webhook setup and handles custom updates.
+For the custom webhook setup, the libraries `starlette` and `uvicorn` are used. Please install
+them as `pip install starlette~=0.20.0 uvicorn~=0.17.0`.
+Note that any other `asyncio` based web server framework can be used for a custom webhook setup
+just as well.
+
+Usage:
+Set bot token, url, admin chat_id and port at the start of the `main` function.
+You may also need to change the `listen` value in the uvicorn configuration to match your setup.
+Press Ctrl-C on the command line or send a signal to the process to stop the bot.
+"""
 from html import escape
+from http import HTTPStatus
 from typing import Optional, Tuple
 from uuid import uuid4
+import asyncio
+import html
+import logging
+import os
+from dataclasses import dataclass
+from http import HTTPStatus
+
+import uvicorn
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse, Response
+from starlette.routing import Route
 
 from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextMessageContent
 from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, TWO, THREE, FOUR, END_ROUTES, \
     START_ROUTES
-from persist import Persist
-
-# from persist import Persist
-
-# ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-# WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'cert.pem')
-# WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'private.key')
-
 
 try:
     from telegram import __version_info__
@@ -28,26 +46,30 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 
-from telegram import Chat, ChatMember, ChatMemberUpdated, Update
+from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import Application, ChatMemberHandler, CommandHandler, ContextTypes, CallbackQueryHandler, \
-    ConversationHandler, InlineQueryHandler
+from telegram.ext import (
+    Application,
+    CallbackContext,
+    CommandHandler,
+    ContextTypes,
+    ExtBot,
+    TypeHandler, CallbackQueryHandler, ConversationHandler, InlineQueryHandler,
+)
 
 # Enable logging
-
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
-
 logger = logging.getLogger(__name__)
-PORT = int(os.environ.get("PORT", 8080))
 TOKEN = os.environ.get("TOKEN")
+PORT = int(os.environ.get("PORT", 8080))
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
 FIREBASE_URL = os.environ.get("FIREBASE_URL")
 GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
-logger.info("-- Port - %d", PORT)
+logger.info("-- PORT - %d", PORT)
 logger.info("-- WEBHOOK_URL %s", WEBHOOK_URL)
 logger.info("-- TOKEN %s", TOKEN)
 logger.info("-- FIREBASE_CREDENTIALS %s", FIREBASE_CREDENTIALS)
@@ -58,102 +80,6 @@ logger.info("-- FIREBASE_URL  %s", FIREBASE_URL)
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
     await update.message.reply_text("Help!")
-
-
-def extract_status_change(chat_member_update: ChatMemberUpdated) -> Optional[Tuple[bool, bool]]:
-    """Takes a ChatMemberUpdated instance and extracts whether the 'old_chat_member' was a member
-    of the chat and whether the 'new_chat_member' is a member of the chat. Returns None, if
-    the status didn't change.
-    """
-    status_change = chat_member_update.difference().get("status")
-    old_is_member, new_is_member = chat_member_update.difference().get("is_member", (None, None))
-
-    if status_change is None:
-        return None
-
-    old_status, new_status = status_change
-    was_member = old_status in [
-        ChatMember.MEMBER,
-        ChatMember.OWNER,
-        ChatMember.ADMINISTRATOR,
-    ] or (old_status == ChatMember.RESTRICTED and old_is_member is True)
-    is_member = new_status in [
-        ChatMember.MEMBER,
-        ChatMember.OWNER,
-        ChatMember.ADMINISTRATOR,
-    ] or (new_status == ChatMember.RESTRICTED and new_is_member is True)
-
-    return was_member, is_member
-
-
-async def track_chats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Tracks the chats the bot is in."""
-    result = extract_status_change(update.my_chat_member)
-    if result is None:
-        return
-    was_member, is_member = result
-
-    # Let's check who is responsible for the change
-    cause_name = update.effective_user.full_name
-
-    # Handle chat types differently:
-    chat = update.effective_chat
-    if chat.type == Chat.PRIVATE:
-        if not was_member and is_member:
-            logger.info("%s started the bot", cause_name)
-            context.bot_data.setdefault("user_ids", set()).add(chat.id)
-        elif was_member and not is_member:
-            logger.info("%s blocked the bot", cause_name)
-            context.bot_data.setdefault("user_ids", set()).discard(chat.id)
-    elif chat.type in [Chat.GROUP, Chat.SUPERGROUP]:
-        if not was_member and is_member:
-            logger.info("%s added the bot to the group %s", cause_name, chat.title)
-            context.bot_data.setdefault("group_ids", set()).add(chat.id)
-        elif was_member and not is_member:
-            logger.info("%s removed the bot from the group %s", cause_name, chat.title)
-            context.bot_data.setdefault("group_ids", set()).discard(chat.id)
-    else:
-        if not was_member and is_member:
-            logger.info("%s added the bot to the channel %s", cause_name, chat.title)
-            context.bot_data.setdefault("channel_ids", set()).add(chat.id)
-        elif was_member and not is_member:
-            logger.info("%s removed the bot from the channel %s", cause_name, chat.title)
-            context.bot_data.setdefault("channel_ids", set()).discard(chat.id)
-
-
-async def show_chats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Shows which chats the bot is in"""
-    user_ids = ", ".join(str(uid) for uid in context.bot_data.setdefault("user_ids", set()))
-    group_ids = ", ".join(str(gid) for gid in context.bot_data.setdefault("group_ids", set()))
-    channel_ids = ", ".join(str(cid) for cid in context.bot_data.setdefault("channel_ids", set()))
-    text = (
-        f"@{context.bot.username} is currently in a conversation with the user IDs {user_ids}."
-        f" Moreover it is a member of the groups with IDs {group_ids} "
-        f"and administrator in the channels with IDs {channel_ids}."
-    )
-    await update.effective_message.reply_text(text)
-
-
-async def greet_chat_members(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Greets new users in chats and announces when someone leaves"""
-    result = extract_status_change(update.chat_member)
-    if result is None:
-        return
-
-    was_member, is_member = result
-    cause_name = update.chat_member.from_user.mention_html()
-    member_name = update.chat_member.new_chat_member.user.mention_html()
-
-    if not was_member and is_member:
-        await update.effective_chat.send_message(
-            f"{member_name} was added by {cause_name}. Welcome!",
-            parse_mode=ParseMode.HTML,
-        )
-    elif was_member and not is_member:
-        await update.effective_chat.send_message(
-            f"{member_name} is no longer with us. Thanks a lot, {cause_name} ...",
-            parse_mode=ParseMode.HTML,
-        )
 
 
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -188,28 +114,75 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.inline_query.answer(results)
 
 
-def main() -> None:
-    """Start the bot."""
-    logger.info("-------main ======== ")
-    # Create the Application and pass it your bot's token.
-    # my_persistence = Persist.from_environment()
-    # application = Application.builder().token(os.environ["TOKEN"]).persistence(my_persistence).build()
-    application = Application.builder().token(os.environ["TOKEN"]).build()
-    # application.add_handler(CommandHandler("start", start))
-    # application.add_handler(CallbackQueryHandler(button))
-    application.add_handler(CommandHandler("help", help_command))
-    # Keep track of which chats the bot is in
-    application.add_handler(ChatMemberHandler(track_chats, ChatMemberHandler.MY_CHAT_MEMBER))
-    application.add_handler(CommandHandler("show_chats", show_chats))
+@dataclass
+class WebhookUpdate:
+    """Simple dataclass to wrap a custom update type"""
 
-    # Handle members joining/leaving chats.
-    application.add_handler(ChatMemberHandler(greet_chat_members, ChatMemberHandler.CHAT_MEMBER))
-    # Setup conversation handler with the states FIRST and SECOND
-    # Use the pattern parameter to pass CallbackQueries with specific
-    # data pattern to the corresponding handlers.
-    # ^ means "start of line/string"
-    # $ means "end of line/string"
-    # So ^ABC$ will only allow 'ABC'
+    user_id: int
+    payload: str
+
+
+class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
+    """
+    Custom CallbackContext class that makes `user_data` available for updates of type
+    `WebhookUpdate`.
+    """
+
+    @classmethod
+    def from_update(
+        cls,
+        update: object,
+        application: "Application",
+    ) -> "CustomContext":
+        if isinstance(update, WebhookUpdate):
+            return cls(application=application, user_id=update.user_id)
+        return super().from_update(update, application)
+
+
+async def start(update: Update, context: CustomContext) -> None:
+    """Display a message with instructions on how to use this bot."""
+    url = context.bot_data["url"]
+    payload_url = html.escape(f"{url}/submitpayload?user_id=<your user id>&payload=<payload>")
+    text = (
+        f"To check if the bot is still running, call <code>{url}/healthcheck</code>.\n\n"
+        f"To post a custom update, call <code>{payload_url}</code>."
+    )
+    await update.message.reply_html(text=text)
+
+
+async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
+    """Callback that handles the custom updates."""
+    chat_member = await context.bot.get_chat_member(chat_id=update.user_id, user_id=update.user_id)
+    payloads = context.user_data.setdefault("payloads", [])
+    payloads.append(update.payload)
+    combined_payloads = "</code>\n• <code>".join(payloads)
+    text = (
+        f"The user {chat_member.user.mention_html()} has sent a new payload. "
+        f"So far they have sent the following payloads: \n\n• <code>{combined_payloads}</code>"
+    )
+    await context.bot.send_message(
+        chat_id=context.bot_data["admin_chat_id"], text=text, parse_mode=ParseMode.HTML
+    )
+
+
+async def main() -> None:
+    """Set up the application and a custom webserver."""
+    admin_chat_id = 1001269185817
+
+    context_types = ContextTypes(context=CustomContext)
+    # Here we set updater to None because we want our custom webhook server to handle the updates
+    # and hence we don't need an Updater instance
+    application = (
+        Application.builder().token(TOKEN).updater(None).context_types(context_types).build()
+    )
+    # save the values in `bot_data` such that we may easily access them in the callbacks
+    application.bot_data["url"] = WEBHOOK_URL
+    application.bot_data["admin_chat_id"] = admin_chat_id
+
+    # register handlers
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
@@ -231,29 +204,65 @@ def main() -> None:
     application.add_handler(conv_handler)
     application.add_handler(InlineQueryHandler(inline_query))
 
-    # Run the bot until the user presses Ctrl-C
-    # We pass 'allowed_updates' handle *all* updates including `chat_member` updates
-    # To reset this, simply pass `allowed_updates=[]`
-    # application.run_polling()
+    # Pass webhook settings to telegram
+    await application.bot.set_webhook(url=f"{WEBHOOK_URL}/telegram")
 
-    application.run_webhook(listen="0.0.0.0",
-                            port=PORT,
-                            webhook_url=WEBHOOK_URL)
+    # Set up webserver
+    async def telegram(request: Request) -> Response:
+        """Handle incoming Telegram updates by putting them into the `update_queue`"""
+        await application.update_queue.put(
+            Update.de_json(data=await request.json(), bot=application.bot)
+        )
+        return Response()
 
+    async def custom_updates(request: Request) -> PlainTextResponse:
+        """
+        Handle incoming webhook updates by also putting them into the `update_queue` if
+        the required parameters were passed correctly.
+        """
+        try:
+            user_id = int(request.query_params["user_id"])
+            payload = request.query_params["payload"]
+        except KeyError:
+            return PlainTextResponse(
+                status_code=HTTPStatus.BAD_REQUEST,
+                content="Please pass both `user_id` and `payload` as query parameters.",
+            )
+        except ValueError:
+            return PlainTextResponse(
+                status_code=HTTPStatus.BAD_REQUEST,
+                content="The `user_id` must be a string!",
+            )
 
-from flask import Flask, request, jsonify
+        await application.update_queue.put(WebhookUpdate(user_id=user_id, payload=payload))
+        return PlainTextResponse("Thank you for the submission! It's being forwarded.")
 
-app = Flask(__name__)
+    async def health(_: Request) -> PlainTextResponse:
+        """For the health endpoint, reply with a simple plain text message."""
+        return PlainTextResponse(content="The bot is still running fine :)")
 
+    starlette_app = Starlette(
+        routes=[
+            Route("/telegram", telegram, methods=["POST"]),
+            Route("/healthcheck", health, methods=["GET"]),
+            Route("/submitpayload", custom_updates, methods=["POST", "GET"]),
+        ]
+    )
+    webserver = uvicorn.Server(
+        config=uvicorn.Config(
+            app=starlette_app,
+            port=PORT,
+            use_colors=False,
+            host="0.0.0.0",
+        )
+    )
 
-@app.route("/", methods=["GET"])
-def homepage():
-    if request.method == "GET":
-        return jsonify({"message": "Hello World!"})
+    # Run application and webserver together
+    async with application:
+        await application.start()
+        await webserver.serve()
+        await application.stop()
 
 
 if __name__ == "__main__":
-    # main()
-    my_persistence = Persist.from_environment()
-    app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
-
+    asyncio.run(main())
