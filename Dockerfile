@@ -1,6 +1,6 @@
 FROM python:3.11
 ENV PYTHONUNBUFFERED True
-WORKDIR /app
+#WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
 COPY . .
