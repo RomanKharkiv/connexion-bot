@@ -47,9 +47,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TOKEN = os.environ.get("TOKEN")
+TOKEN = os.environ.get("TOKEN", "891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s")
 PORT = int(os.environ.get("PORT", 8080))
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://connexion-image-wcgzee6f5a-uc.a.run.app")
 
 GENDER, PHOTO, LOCATION, BIO = range(4)
 
