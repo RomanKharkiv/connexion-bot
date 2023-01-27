@@ -56,7 +56,7 @@ GENDER, PHOTO, LOCATION, BIO = range(4)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the conversation and asks the user about their gender."""
-    reply_keyboard = [["Boy", "Girl", "Other"]]
+    reply_keyboard = [["Boy", "Girl"]]
 
     await update.message.reply_text(
         "Hi! My name is Professor Bot. I will hold a conversation with you. "
@@ -175,10 +175,10 @@ def main() -> None:
     application.add_handler(conv_handler)
 
     # Run the bot until the user presses Ctrl-C
-    application.run_polling()
-    # application.run_webhook(listen="0.0.0.0",
-    #                         port=PORT,
-    #                         webhook_url=WEBHOOK_URL)
+    # application.run_polling()
+    application.run_webhook(listen="0.0.0.0",
+                            port=PORT,
+                            webhook_url=WEBHOOK_URL)
 
 
 if __name__ == "__main__":
