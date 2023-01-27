@@ -1,6 +1,6 @@
 import logging
 
-from telegram import __version__ as TG_VER
+from telegram import __version__ as TG_VER, ReplyKeyboardRemove
 
 try:
     from telegram import __version_info__
@@ -14,7 +14,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import ContextTypes, ConversationHandler, CallbackContext
 
 # Enable logging
 logging.basicConfig(
@@ -23,9 +23,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Stages
-START_ROUTES, END_ROUTES = range(2)
+# START_ROUTES, END_ROUTES = range(2)
 # Callback data
 ONE, TWO, THREE, FOUR = range(4)
+PHOTO, LOCATION, BIO = range(3)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -39,15 +40,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # a list (hence `[[...]]`).
     keyboard = [
         [
-            InlineKeyboardButton("1", callback_data=str(ONE)),
-            InlineKeyboardButton("2", callback_data=str(TWO)),
+            InlineKeyboardButton("Yes, I have", callback_data=str(ONE)),
+            InlineKeyboardButton("No, I`m baying", callback_data=str(TWO)),
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     # Send message with text and appended InlineKeyboard
-    await update.message.reply_text("Start handler, Choose a route", reply_markup=reply_markup)
+    await update.message.reply_text("Do you have somthing to sell? ", reply_markup=reply_markup)
     # Tell ConversationHandler that we're in state `FIRST` now
-    return START_ROUTES
+    return PHOTO
 
 
 async def start_over(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -68,83 +69,46 @@ async def start_over(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # originated the CallbackQuery. This gives the feeling of an
     # interactive menu.
     await query.edit_message_text(text="Start handler, Choose a route", reply_markup=reply_markup)
-    return START_ROUTES
+    return PHOTO
 
 
-async def one(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Show new choice of buttons"""
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
-        [
-            InlineKeyboardButton("3", callback_data=str(THREE)),
-            InlineKeyboardButton("4", callback_data=str(FOUR)),
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="First CallbackQueryHandler, Choose a route", reply_markup=reply_markup
-    )
-    return START_ROUTES
+def photo(update: Update, context: CallbackContext):
+    user = update.message.from_user
+    photo_file = update.message.photo[-1].get_file()
+    photo_file.download('user_foto.jpg')
+    logger.info("Photo of %s: %s", user.first_name, 'user_foto.jpg')
+    update.message.reply_text("perfect . almost complete, Now please send me your "
+                              "location, '' or send /skip if you dom`t")
+    return LOCATION
 
 
-async def two(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Show new choice of buttons"""
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
-        [
-            InlineKeyboardButton("1", callback_data=str(ONE)),
-            InlineKeyboardButton("3", callback_data=str(THREE)),
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="Second CallbackQueryHandler, Choose a route", reply_markup=reply_markup
-    )
-    return START_ROUTES
+def skip_photo(update: Update, context: CallbackContext):
+    user = update.message.from_user
+    logger.info("User %s: did not send a photo", user.first_name)
+    update.message.reply_text("Ok, no problem! Now send me your location please, ' ' or send /skip.")
+    return LOCATION
 
 
-async def three(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Show new choice of buttons. This is the end point of the conversation."""
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
-        [
-            InlineKeyboardButton("Yes, let's do it again!", callback_data=str(ONE)),
-            InlineKeyboardButton("Nah, I've had enough ...", callback_data=str(TWO)),
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="Third CallbackQueryHandler. Do want to start over?", reply_markup=reply_markup
-    )
-    # Transfer to conversation state `SECOND`
-    return END_ROUTES
+def location(update: Update, context: CallbackContext):
+    user = update.message.from_user
+    user_location = update.message.location
+    logger.info("Location of %s: %f / %f ", user.first_name, user_location.latitude, user_location.longitude)
+    update.message.reply_text("Okm we will take it in consideration a notify ")
+    return BIO
 
 
-async def four(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Show new choice of buttons"""
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
-        [
-            InlineKeyboardButton("2", callback_data=str(TWO)),
-            InlineKeyboardButton("3", callback_data=str(THREE)),
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="Fourth CallbackQueryHandler, Choose a route", reply_markup=reply_markup
-    )
-    return START_ROUTES
-
-
-async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Returns `ConversationHandler.END`, which tells the
-    ConversationHandler that the conversation is over.
-    """
-    query = update.callback_query
-    await query.answer()
-    await query.edit_message_text(text="See you next time!")
+def bio(update: Update, context: CallbackContext):
+    user = update.message.from_user
+    logger.info("review by %s: %s ", user.first_name, update.message.text)
+    update.message.reply_text("Thank you! We will call you soon!")
     return ConversationHandler.END
+
+
+def cansel(update: Update, context: CallbackContext):
+    user = update.message.from_user
+    logger.info("User %s: cansel the conversation", user.first_name)
+    update.message.reply_text("reach as back you ", reply_markup=ReplyKeyboardRemove())
+    return ConversationHandler.END
+
+
+

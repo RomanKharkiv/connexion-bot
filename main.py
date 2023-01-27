@@ -1,58 +1,44 @@
+#!/usr/bin/env python
+# pylint: disable=unused-argument, wrong-import-position
+# This program is dedicated to the public domain under the CC0 license.
+
 """
-Simple example of a bot that uses a custom webhook setup and handles custom updates.
-For the custom webhook setup, the libraries `starlette` and `uvicorn` are used. Please install
-them as `pip install starlette~=0.20.0 uvicorn~=0.17.0`.
-Note that any other `asyncio` based web server framework can be used for a custom webhook setup
-just as well.
+First, a few callback functions are defined. Then, those functions are passed to
+the Application and registered at their respective places.
+Then, the bot is started and runs until we press Ctrl-C on the command line.
 
 Usage:
-Set bot token, url, admin chat_id and port at the start of the `main` function.
-You may also need to change the `listen` value in the uvicorn configuration to match your setup.
-Press Ctrl-C on the command line or send a signal to the process to stop the bot.
+
+Example of a bot-user conversation using ConversationHandler.
+Send /start to initiate the conversation.
+Press Ctrl-C on the command line or send a signal to the process to stop the
+bot.
 """
-from html import escape
-from http import HTTPStatus
-from typing import Optional, Tuple
-from uuid import uuid4
-import asyncio
-import html
+
 import logging
 import os
-from dataclasses import dataclass
-from http import HTTPStatus
 
-import uvicorn
-from starlette.applications import Starlette
-from starlette.requests import Request
-from starlette.responses import PlainTextResponse, Response
-from starlette.routing import Route
-
-from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextMessageContent
-from inlinekeyboard import one, two, three, four, start, start_over, end, ONE, TWO, THREE, FOUR, END_ROUTES, \
-    START_ROUTES
-from persist import Persist
+from telegram import __version__ as TG_VER
 
 try:
     from telegram import __version_info__
 except ImportError:
     __version_info__ = (0, 0, 0, 0, 0)  # type: ignore[assignment]
 
-if __version_info__ < (20, 0, 0, "alpha", 1):
+if __version_info__ < (20, 0, 0, "alpha", 5):
     raise RuntimeError(
         f"This example is not compatible with your current PTB version {TG_VER}. To view the "
         f"{TG_VER} version of this example, "
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
-
-from telegram import Update
-from telegram.constants import ParseMode
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application,
-    CallbackContext,
     CommandHandler,
     ContextTypes,
-    ExtBot,
-    TypeHandler, CallbackQueryHandler, ConversationHandler, InlineQueryHandler,
+    ConversationHandler,
+    MessageHandler,
+    filters,
 )
 
 # Enable logging
@@ -60,212 +46,140 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
+
 TOKEN = os.environ.get("TOKEN")
 PORT = int(os.environ.get("PORT", 8080))
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
-FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
-FIREBASE_URL = os.environ.get("FIREBASE_URL")
-GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
-logger.info("-- PORT - %d", PORT)
-logger.info("-- WEBHOOK_URL %s", WEBHOOK_URL)
-logger.info("-- TOKEN %s", TOKEN)
-logger.info("-- FIREBASE_CREDENTIALS %s", FIREBASE_CREDENTIALS)
-logger.info("-- GOOGLE_APPLICATION_CREDENTIALS %s", GOOGLE_APPLICATION_CREDENTIALS)
-logger.info("-- FIREBASE_URL  %s", FIREBASE_URL)
-
-TOKEN="891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s"
-WEBHOOK_URL="https://connexion-image-wcgzee6f5a-uc.a.run.app"
-
-my_persistence = Persist.from_environment()
+GENDER, PHOTO, LOCATION, BIO = range(4)
 
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a message when the command /help is issued."""
-    await update.message.reply_text("Help!")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Starts the conversation and asks the user about their gender."""
+    reply_keyboard = [["Boy", "Girl", "Other"]]
 
-
-async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle the inline query. This is run when you type: @botusername <query>"""
-    query = update.inline_query.query
-
-    if query == "":
-        return
-
-    results = [
-        InlineQueryResultArticle(
-            id=str(uuid4()),
-            title="Caps",
-            input_message_content=InputTextMessageContent(query.upper()),
+    await update.message.reply_text(
+        "Hi! My name is Professor Bot. I will hold a conversation with you. "
+        "Send /cancel to stop talking to me.\n\n"
+        "Are you a boy or a girl?",
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard, one_time_keyboard=True, input_field_placeholder="Boy or Girl?"
         ),
-        InlineQueryResultArticle(
-            id=str(uuid4()),
-            title="Bold",
-            input_message_content=InputTextMessageContent(
-                f"<b>{escape(query)}</b>", parse_mode=ParseMode.HTML
-            ),
-        ),
-        InlineQueryResultArticle(
-            id=str(uuid4()),
-            title="Italic",
-            input_message_content=InputTextMessageContent(
-                f"<i>{escape(query)}</i>", parse_mode=ParseMode.HTML
-            ),
-        ),
-    ]
-
-    await update.inline_query.answer(results)
-
-
-@dataclass
-class WebhookUpdate:
-    """Simple dataclass to wrap a custom update type"""
-
-    user_id: int
-    payload: str
-
-
-class CustomContext(CallbackContext[ExtBot, dict, dict, dict]):
-    """
-    Custom CallbackContext class that makes `user_data` available for updates of type
-    `WebhookUpdate`.
-    """
-
-    @classmethod
-    def from_update(
-        cls,
-        update: object,
-        application: "Application",
-    ) -> "CustomContext":
-        if isinstance(update, WebhookUpdate):
-            return cls(application=application, user_id=update.user_id)
-        return super().from_update(update, application)
-
-#
-# async def start(update: Update, context: CustomContext) -> None:
-#     """Display a message with instructions on how to use this bot."""
-#     url = context.bot_data["url"]
-#     payload_url = html.escape(f"{url}/submitpayload?user_id=<your user id>&payload=<payload>")
-#     text = (
-#         f"To check if the bot is still running, call <code>{url}/healthcheck</code>.\n\n"
-#         f"To post a custom update, call <code>{payload_url}</code>."
-#     )
-#     await update.message.reply_html(text=text)
-
-
-async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
-    """Callback that handles the custom updates."""
-    chat_member = await context.bot.get_chat_member(chat_id=update.user_id, user_id=update.user_id)
-    payloads = context.user_data.setdefault("payloads", [])
-    payloads.append(update.payload)
-    combined_payloads = "</code>\n• <code>".join(payloads)
-    text = (
-        f"The user {chat_member.user.mention_html()} has sent a new payload. "
-        f"So far they have sent the following payloads: \n\n• <code>{combined_payloads}</code>"
-    )
-    await context.bot.send_message(
-        chat_id=context.bot_data["admin_chat_id"], text=text, parse_mode=ParseMode.HTML
     )
 
+    return GENDER
 
-async def main() -> None:
-    """Set up the application and a custom webserver."""
-    admin_chat_id = 1001269185817
 
-    context_types = ContextTypes(context=CustomContext)
-    # Here we set updater to None because we want our custom webhook server to handle the updates
-    # and hence we don't need an Updater instance
-    application = (
-        Application.builder().token(TOKEN).updater(None).persistence(my_persistence).context_types(context_types).build()
+async def gender(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Stores the selected gender and asks for a photo."""
+    user = update.message.from_user
+    logger.info("Gender of %s: %s", user.first_name, update.message.text)
+    await update.message.reply_text(
+        "I see! Please send me a photo of yourself, "
+        "so I know what you look like, or send /skip if you don't want to.",
+        reply_markup=ReplyKeyboardRemove(),
     )
-    # save the values in `bot_data` such that we may easily access them in the callbacks
-    application.bot_data["url"] = WEBHOOK_URL
-    application.bot_data["admin_chat_id"] = admin_chat_id
 
-    # register handlers
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
+    return PHOTO
+
+
+async def photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Stores the photo and asks for a location."""
+    user = update.message.from_user
+    photo_file = await update.message.photo[-1].get_file()
+    await photo_file.download_to_drive("user_photo.jpg")
+    logger.info("Photo of %s: %s", user.first_name, "user_photo.jpg")
+    await update.message.reply_text(
+        "Gorgeous! Now, send me your location please, or send /skip if you don't want to."
+    )
+
+    return LOCATION
+
+
+async def skip_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Skips the photo and asks for a location."""
+    user = update.message.from_user
+    logger.info("User %s did not send a photo.", user.first_name)
+    await update.message.reply_text(
+        "I bet you look great! Now, send me your location please, or send /skip."
+    )
+
+    return LOCATION
+
+
+async def location(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Stores the location and asks for some info about the user."""
+    user = update.message.from_user
+    user_location = update.message.location
+    logger.info(
+        "Location of %s: %f / %f", user.first_name, user_location.latitude, user_location.longitude
+    )
+    await update.message.reply_text(
+        "Maybe I can visit you sometime! At last, tell me something about yourself."
+    )
+
+    return BIO
+
+
+async def skip_location(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Skips the location and asks for info about the user."""
+    user = update.message.from_user
+    logger.info("User %s did not send a location.", user.first_name)
+    await update.message.reply_text(
+        "You seem a bit paranoid! At last, tell me something about yourself."
+    )
+
+    return BIO
+
+
+async def bio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Stores the info about the user and ends the conversation."""
+    user = update.message.from_user
+    logger.info("Bio of %s: %s", user.first_name, update.message.text)
+    await update.message.reply_text("Thank you! I hope we can talk again some day.")
+
+    return ConversationHandler.END
+
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Cancels and ends the conversation."""
+    user = update.message.from_user
+    logger.info("User %s canceled the conversation.", user.first_name)
+    await update.message.reply_text(
+        "Bye! I hope we can talk again some day.", reply_markup=ReplyKeyboardRemove()
+    )
+
+    return ConversationHandler.END
+
+
+def main() -> None:
+    """Run the bot."""
+    # Create the Application and pass it your bot's token.
+    application = Application.builder().token(TOKEN).build()
+
+    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
-            START_ROUTES: [
-                CallbackQueryHandler(one, pattern="^" + str(ONE) + "$"),
-                CallbackQueryHandler(two, pattern="^" + str(TWO) + "$"),
-                CallbackQueryHandler(three, pattern="^" + str(THREE) + "$"),
-                CallbackQueryHandler(four, pattern="^" + str(FOUR) + "$"),
+            GENDER: [MessageHandler(filters.Regex("^(Boy|Girl|Other)$"), gender)],
+            PHOTO: [MessageHandler(filters.PHOTO, photo), CommandHandler("skip", skip_photo)],
+            LOCATION: [
+                MessageHandler(filters.LOCATION, location),
+                CommandHandler("skip", skip_location),
             ],
-            END_ROUTES: [
-                CallbackQueryHandler(start_over, pattern="^" + str(ONE) + "$"),
-                CallbackQueryHandler(end, pattern="^" + str(TWO) + "$"),
-            ],
+            BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, bio)],
         },
-        fallbacks=[CommandHandler("start", start)],
+        fallbacks=[CommandHandler("cancel", cancel)],
     )
 
-    # Add ConversationHandler to application that will be used for handling updates
     application.add_handler(conv_handler)
-    application.add_handler(InlineQueryHandler(inline_query))
 
-    # Pass webhook settings to telegram
-    await application.bot.set_webhook(url=f"{WEBHOOK_URL}/telegram")
-
-    # Set up webserver
-    async def telegram(request: Request) -> Response:
-        """Handle incoming Telegram updates by putting them into the `update_queue`"""
-        await application.update_queue.put(
-            Update.de_json(data=await request.json(), bot=application.bot)
-        )
-        return Response()
-
-    async def custom_updates(request: Request) -> PlainTextResponse:
-        """
-        Handle incoming webhook updates by also putting them into the `update_queue` if
-        the required parameters were passed correctly.
-        """
-        try:
-            user_id = int(request.query_params["user_id"])
-            payload = request.query_params["payload"]
-        except KeyError:
-            return PlainTextResponse(
-                status_code=HTTPStatus.BAD_REQUEST,
-                content="Please pass both `user_id` and `payload` as query parameters.",
-            )
-        except ValueError:
-            return PlainTextResponse(
-                status_code=HTTPStatus.BAD_REQUEST,
-                content="The `user_id` must be a string!",
-            )
-
-        await application.update_queue.put(WebhookUpdate(user_id=user_id, payload=payload))
-        return PlainTextResponse("Thank you for the submission! It's being forwarded.")
-
-    async def health(_: Request) -> PlainTextResponse:
-        """For the health endpoint, reply with a simple plain text message."""
-        return PlainTextResponse(content="The bot is still running fine :)")
-
-    starlette_app = Starlette(
-        routes=[
-            Route("/telegram", telegram, methods=["POST"]),
-            Route("/healthcheck", health, methods=["GET"]),
-            Route("/submitpayload", custom_updates, methods=["POST", "GET"]),
-        ]
-    )
-    webserver = uvicorn.Server(
-        config=uvicorn.Config(
-            app=starlette_app,
-            port=PORT,
-            use_colors=False,
-            host="0.0.0.0",
-        )
-    )
-
-    # Run application and webserver together
-    async with application:
-        await application.start()
-        await webserver.serve()
-        await application.stop()
+    # Run the bot until the user presses Ctrl-C
+    application.run_polling()
+    # application.run_webhook(listen="0.0.0.0",
+    #                         port=PORT,
+    #                         webhook_url=WEBHOOK_URL)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

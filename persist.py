@@ -13,17 +13,17 @@ from telegram.ext import BasePersistence, PersistenceInput
 
 logger = logging.getLogger(__name__)
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-FIREBASE_CREDS = os.path.join(ROOT_DIR, os.environ["FIREBASE_CREDENTIALS"])
+# FIREBASE_CREDS = os.path.join(ROOT_DIR, os.environ["FIREBASE_CREDENTIALS"])
 FIREBASE_URL = os.environ.get("FIREBASE_URL")
 GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
-logger.info("-- firebase cred  %s, file - %s", FIREBASE_CREDS, os.environ["FIREBASE_CREDENTIALS"])
+# logger.info("-- firebase cred  %s, file - %s", FIREBASE_CREDS, os.environ["FIREBASE_CREDENTIALS"])
 logger.info("-- GOOGLE_APPLICATION_CREDENTIALS %s", GOOGLE_APPLICATION_CREDENTIALS)
 logger.info("-- FIREBASE_URL  %s", FIREBASE_URL)
 
-FIREBASE_CREDENTIALS="flawless-star-133923-431daa09f037.json"
-FIREBASE_URL="https://flawless-star-133923-default-rtdb.firebaseio.com/"
-GOOGLE_APPLICATION_CREDENTIALS="flawless-star-133923-431daa09f037.json"
+FIREBASE_CREDENTIALS = "flawless-star-133923-431daa09f037.json"
+FIREBASE_URL = "https://flawless-star-133923-default-rtdb.firebaseio.com/"
+GOOGLE_APPLICATION_CREDENTIALS = "flawless-star-133923-431daa09f037.json"
 
 
 class Persist(BasePersistence):
