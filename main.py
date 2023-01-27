@@ -155,7 +155,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
-    application = Application.builder().token(TOKEN).build()
+    application = Application.builder().token("891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s").build()
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
@@ -178,7 +178,7 @@ def main() -> None:
     # application.run_polling()
     application.run_webhook(listen="0.0.0.0",
                             port=PORT,
-                            webhook_url=WEBHOOK_URL)
+                            webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
 
 
 if __name__ == "__main__":
