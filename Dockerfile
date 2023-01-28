@@ -2,7 +2,6 @@ FROM python:3.11
 ENV PYTHONUNBUFFERED True
 COPY . /app
 WORKDIR /app
-#RUN chmod -R a+X /app/flawless-star-133923-431daa09f037.json
 RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
 #RUN update-ca-certificates
 
@@ -13,6 +12,7 @@ ENV WEBHOOK_URL $WEBHOOK_URL
 ENV FIREBASE_CREDENTIALS $FIREBASE_CREDENTIALS
 ENV FIREBASE_URL $FIREBASE_URL
 ENV GOOGLE_APPLICATION_CREDENTIALS $GOOGLE_APPLICATION_CREDENTIALS
+#EXPOSE PORT:PORT
 
 ENTRYPOINT ["python"]
 CMD ["./main.py"]

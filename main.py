@@ -51,6 +51,20 @@ logger = logging.getLogger(__name__)
 TOKEN = os.environ.get("TOKEN", "891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s")
 PORT = int(os.environ.get("PORT", 8080))
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "https://connexion-image-wcgzee6f5a-uc.a.run.app")
+FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
+FIREBASE_URL = os.environ.get("FIREBASE_URL")
+GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'certificate.crt')
+WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'privateKey.key')
+
+logger.info("-- Port - %d", PORT)
+logger.info("-- WEBHOOK_URL %s", WEBHOOK_URL)
+logger.info("-- TOKEN %s", TOKEN)
+logger.info("-- FIREBASE_CREDENTIALS %s", FIREBASE_CREDENTIALS)
+logger.info("-- GOOGLE_APPLICATION_CREDENTIALS %s", GOOGLE_APPLICATION_CREDENTIALS)
+logger.info("-- FIREBASE_URL  %s", FIREBASE_URL)
 
 GENDER, PHOTO, LOCATION, BIO = range(4)
 
@@ -178,20 +192,22 @@ def main() -> None:
     # Run the bot until the user presses Ctrl-C
     # application.run_polling()
     application.run_webhook(listen="0.0.0.0",
+                            cert=WEBHOOK_SSL_CERT,
+                            key=WEBHOOK_SSL_PRIV,
                             port=PORT,
                             webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
 
 
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-
-@app.route("/", methods=["GET"])
-def homepage():
-    if request.method == "GET":
-        return jsonify({"message": "Hello World!"})
+# from flask import Flask, request, jsonify
+#
+# app = Flask(__name__)
+#
+#
+# @app.route("/", methods=["GET"])
+# def homepage():
+#     if request.method == "GET":
+#         return jsonify({"message": "Hello World!"})
 
 if __name__ == "__main__":
-    # main()
-    app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
+    main()
+    # app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
