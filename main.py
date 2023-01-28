@@ -18,6 +18,7 @@ bot.
 import logging
 import os
 
+from flask import app
 from telegram import __version__ as TG_VER
 
 try:
@@ -181,5 +182,16 @@ def main() -> None:
                             webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
 
 
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+
+@app.route("/", methods=["GET"])
+def homepage():
+    if request.method == "GET":
+        return jsonify({"message": "Hello World!"})
+
 if __name__ == "__main__":
-    main()
+    # main()
+    app.run(threaded=True, host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
