@@ -18,6 +18,7 @@ Set Webhook (only need to be done once)
 
 ```shell
 curl "https://api.telegram.org/bot${TOKEN}/setWebhook?url=$(gcloud run services describe delduca --format 'value(status.url)' --project ${PROJECT_ID})"
+curl "https://api.telegram.org/bot891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s/setWebhook?url=https://connexion-image-wcgzee6f5a-uc.a.run.app"
 ```
 
 [//]: # (Create a new Docker repository named quickstart-docker-repo in the location us-central1)

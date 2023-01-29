@@ -1,25 +1,12 @@
-#!/usr/bin/env python
-# pylint: disable=unused-argument, wrong-import-position
-# This program is dedicated to the public domain under the CC0 license.
-
-"""
-First, a few callback functions are defined. Then, those functions are passed to
-the Application and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-
-Usage:
-
-Example of a bot-user conversation using ConversationHandler.
-Send /start to initiate the conversation.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
-
 import logging
 import os
+import traceback
+import html
+import json
 
 from flask import app
 from telegram import __version__ as TG_VER
+from telegram.constants import ParseMode
 
 try:
     from telegram import __version_info__
@@ -32,6 +19,8 @@ if __version_info__ < (20, 0, 0, "alpha", 5):
         f"{TG_VER} version of this example, "
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
+
+
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application,
@@ -56,8 +45,9 @@ FIREBASE_URL = os.environ.get("FIREBASE_URL")
 GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'certificate.crt')
-WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'privateKey.key')
+WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'cert.crt')
+WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'Key.key')
+DEVELOPER_CHAT_ID = 123456789
 
 logger.info("-- Port - %d", PORT)
 logger.info("-- WEBHOOK_URL %s", WEBHOOK_URL)
@@ -74,7 +64,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     reply_keyboard = [["Boy", "Girl"]]
 
     await update.message.reply_text(
-        "Hi! My name is Professor Bot. I will hold a conversation with you. "
+        "Hi! My name is Connexion Bot. I will hold a conversation with you. "
         "Send /cancel to stop talking to me.\n\n"
         "Are you a boy or a girl?",
         reply_markup=ReplyKeyboardMarkup(
@@ -167,6 +157,39 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
+async def bad_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Raise an error to trigger the error handler."""
+    await context.bot.wrong_method_name()  # type: ignore[attr-defined]
+
+
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Log the error and send a telegram message to notify the developer."""
+    # Log the error before we do anything else, so we can see it even if something breaks.
+    logger.error(msg="Exception while handling an update:", exc_info=context.error)
+
+    # traceback.format_exception returns the usual python message about an exception, but as a
+    # list of strings rather than a single string, so we have to join them together.
+    tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
+    tb_string = "".join(tb_list)
+
+    # Build the message with some markup and additional information about what happened.
+    # You might need to add some logic to deal with messages longer than the 4096 character limit.
+    update_str = update.to_dict() if isinstance(update, Update) else str(update)
+    message = (
+        f"An exception was raised while handling an update\n"
+        f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}"
+        "</pre>\n\n"
+        f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
+        f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
+        f"<pre>{html.escape(tb_string)}</pre>"
+    )
+
+    # Finally, send the message
+    await context.bot.send_message(
+        chat_id=DEVELOPER_CHAT_ID, text=message, parse_mode=ParseMode.HTML
+    )
+
+
 def main() -> None:
     """Run the bot."""
     # Create the Application and pass it your bot's token.
@@ -188,11 +211,14 @@ def main() -> None:
     )
 
     application.add_handler(conv_handler)
+    application.add_error_handler(error_handler)
+
 
     # Run the bot until the user presses Ctrl-C
     # application.run_polling()
     application.run_webhook(listen="0.0.0.0",
                             cert=WEBHOOK_SSL_CERT,
+                            bootstrap_retries=2,
                             key=WEBHOOK_SSL_PRIV,
                             port=PORT,
                             webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
