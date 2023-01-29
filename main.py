@@ -215,13 +215,13 @@ def main() -> None:
 
 
     # Run the bot until the user presses Ctrl-C
-    # application.run_polling()
-    application.run_webhook(listen="0.0.0.0",
-                            cert=WEBHOOK_SSL_CERT,
-                            bootstrap_retries=2,
-                            key=WEBHOOK_SSL_PRIV,
-                            port=PORT,
-                            webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
+    application.run_polling()
+    # application.run_webhook(listen="0.0.0.0",
+    #                         cert=WEBHOOK_SSL_CERT,
+    #                         bootstrap_retries=2,
+    #                         key=WEBHOOK_SSL_PRIV,
+    #                         port=PORT,
+    #                         webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
 
 
 # from flask import Flask, request, jsonify
