@@ -8,6 +8,7 @@ from uuid import uuid4
 from html import escape
 from typing import Optional, Tuple, DefaultDict, Set
 
+import telegram
 from flask import app
 from telegram import __version__ as TG_VER, InlineQueryResultArticle, InputTextMessageContent
 from telegram.constants import ParseMode
@@ -50,8 +51,8 @@ FIREBASE_URL = os.environ.get("FIREBASE_URL")
 GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'cert.crt')
-WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'Key.key')
+WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'pub.pem')
+WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'Key2.key')
 DEVELOPER_CHAT_ID = -1001269185817
 
 logger.info("-- Port - %d", PORT)
@@ -441,6 +442,7 @@ def main() -> None:
                             port=PORT,
                             # url_path="connexion-image-wcgzee6f5a-uc.a.run.app",
                             webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
+    telegram.Bot.set_webhook(url="https://connexion-image-wcgzee6f5a-uc.a.run.app", certificate=WEBHOOK_SSL_CERT)
 
 
 # from flask import Flask, request, jsonify
