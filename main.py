@@ -51,8 +51,8 @@ FIREBASE_URL = os.environ.get("FIREBASE_URL")
 GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'pub.pem')
-WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'Key2.key')
+WEBHOOK_SSL_CERT = os.path.join(ROOT_DIR, 'public.pem.pem')
+WEBHOOK_SSL_PRIV = os.path.join(ROOT_DIR, 'privat.key')
 DEVELOPER_CHAT_ID = -1001269185817
 
 logger.info("-- Port - %d", PORT)
