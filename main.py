@@ -440,7 +440,8 @@ def main() -> None:
                             bootstrap_retries=2,
                             key=WEBHOOK_SSL_PRIV,
                             port=PORT,
-                            # url_path="connexion-image-wcgzee6f5a-uc.a.run.app",
+                            ip_address="216.239.38.53",
+                            url_path="connexion-image-wcgzee6f5a-uc.a.run.app",
                             webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
     telegram.Bot.set_webhook(url="https://connexion-image-wcgzee6f5a-uc.a.run.app", certificate=WEBHOOK_SSL_CERT)
 
