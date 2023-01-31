@@ -445,8 +445,8 @@ def main() -> None:
                             ip_address="216.239.38.53",
                             # url_path="connexion-image-wcgzee6f5a-uc.a.run.app",
                             webhook_url="https://connexion-image-wcgzee6f5a-uc.a.run.app")
-    telegram.Bot.set_webhook(url="https://connexion-image-wcgzee6f5a-uc.a.run.app",
-                             certificate=WEBHOOK_SSL_CERT)
+    # telegram.Bot.set_webhook(url="https://connexion-image-wcgzee6f5a-uc.a.run.app",
+    #                          certificate=WEBHOOK_SSL_CERT)
 
 
 # from flask import Flask, request, jsonify
