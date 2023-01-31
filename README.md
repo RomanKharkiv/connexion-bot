@@ -11,14 +11,14 @@ export WEBHOOK_URL=https://connexion-image-wcgzee6f5a-uc.a.run.app
 ```
 
 ```bash
-gcloud beta run deploy connecxion3 --source .  --execution-environment=gen1 --set-env-vars=[TOKEN=${TOKEN},FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS},FIREBASE_URL=${FIREBASE_URL},GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}] --platform managed --allow-unauthenticated --project ${PROJECT_ID}
+gcloud beta run deploy connecxion --source . --set-env-vars=[TOKEN=${TOKEN},FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS},FIREBASE_URL=${FIREBASE_URL},GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}] --platform managed --allow-unauthenticated --project ${PROJECT_ID}
 ```
 
 Set Webhook (only need to be done once)
 
 ```shell
 curl "https://api.telegram.org/bot${TOKEN}/setWebhook?url=$(gcloud run services describe delduca --format 'value(status.url)' --project ${PROJECT_ID})"
-curl "https://api.telegram.org/bot891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s/setWebhook?url=https://connexion-image-wcgzee6f5a-uc.a.run.app"
+curl "https://api.telegram.org/bot891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s/deleteWebhook?url=https://connexion-image-wcgzee6f5a-uc.a.run.app"
 curl "https://api.telegram.org/bot891162089:AAEVQQkv3L1NlmTadDprvtpbRGcsoBLSY_s/getWebhookInfo"
 ```
 
